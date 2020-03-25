@@ -23,13 +23,13 @@ class HiddenModel:
         return True
 
     def calculate_path(self):
-        if self.observed_model == None or self.compliance_probabilities == None:
-            return None
+        if self.observed_model == None:
+            return False
         self.states = np.zeros(self.number_of_states)
         s = self.states
         
         total_probabilities = np.zeros((self.sequence_length, self.number_of_states))
-        total_probabilities_path = total_probabilities.copy()
+        total_probabilities_path = np.zeros((self.sequence_length, self.number_of_states), dtype=np.uint16)
         
         first_observed_state = self.observed_model.sequence[0]
         for i in range(self.number_of_states):
@@ -40,18 +40,18 @@ class HiddenModel:
                 observed_state = self.observed_model.sequence[t]
                 intermediate_probabilities = np.zeros(self.number_of_states)
                 for i in range(self.number_of_states):
-                    intermediate_probabilities[i] = self.transition_probabilities[i][k] * self.total_probabilities[t-1][i]
+                    intermediate_probabilities[i] = self.transition_probabilities[i][k] * total_probabilities[t-1][i]
                 total_probabilities_path[t][k] = intermediate_probabilities.argmax()
-                total_probabilities[t][k] = intermediate_probabilities[total_probabilities_path] * self.compliance_probabilities[k][observed_state]
-        
-        path = np.zeros(self.sequence_length)
+                total_probabilities[t][k] = intermediate_probabilities[total_probabilities_path[t][k]] * self.compliance_probabilities[k][observed_state]
+
+        path = np.zeros((self.sequence_length), dtype=np.uint16)
         path[-1] = total_probabilities[-1].argmax()
 
         for t in range(self.sequence_length-2, 0, -1):
             path[t] = total_probabilities_path[t+1][path[t+1]]
         
         self.path = path
-        return path
+        return True
         
         
 
