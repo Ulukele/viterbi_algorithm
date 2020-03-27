@@ -2,8 +2,8 @@ import numpy as np
 
 class HiddenModel:
 
-    def __init__(self, number_of_states, initial_probabilities, transition_probabilities):
-        self.number_of_states = number_of_states
+    def __init__(self, initial_probabilities, transition_probabilities):
+        self.number_of_states = initial_probabilities.shape[0]
         self.initial_probabilities = initial_probabilities
         self.transition_probabilities = transition_probabilities
 
@@ -23,7 +23,7 @@ class HiddenModel:
         return True
 
     def calculate_path(self):
-        if self.observed_model == None:
+        if not hasattr(self, 'observed_model'):
             return False
         self.states = np.zeros(self.number_of_states)
         s = self.states
